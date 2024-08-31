@@ -8,18 +8,18 @@ import java.util.List;
 public class CardFactory {
     int iteration = 0;
 
-    public CardItem createCard() {
+    public CardItem createCard(String type, int emission) {
         iteration++;
         String title = "Trip #" + iteration;
-        String description = "You prevented xx.xx kt of carbon emissions by walking!";
-        return new CardItem(title,description, R.drawable.ic_dashboard_black_24dp);
+        String description = "You prevented " + emission + " kt of carbon emissions by " + type + "!";
+        return new CardItem(title,description, R.mipmap.ic_launcher);
     }
 
-    public List<CardItem> createCardList() {
-        List<CardItem> list = new ArrayList<>();
-        for (int i = 0; i < 20; i++) {
-            list.add(createCard());
+    public List<CardItem> createCardList(List<Trip> trips) {
+        List<CardItem> cards = new ArrayList<>();
+        for (Trip trip : trips) {
+            cards.add(createCard(trip.getType(), trip.getEmission()));
         }
-        return list;
+        return cards;
     }
 }

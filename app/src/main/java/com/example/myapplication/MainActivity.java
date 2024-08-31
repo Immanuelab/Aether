@@ -38,8 +38,6 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private FirebaseFirestore firestore;
-    private static final int REQUEST_OAUTH_REQUEST_CODE = 1;
-    private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,64 +54,5 @@ public class MainActivity extends AppCompatActivity {
 
     public FirebaseFirestore getFirestore() {
         return firestore;
-
-        // request permission for google fit
-        requestFitnessPermissions();
-    }
-
-    private void requestFitnessPermissions() {
-        FitnessOptions fitnessOptions = FitnessOptions.builder()
-                .addDataType(DataType.TYPE_LOCATION_SAMPLE, FitnessOptions.ACCESS_READ)
-                .build();
-        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(this), fitnessOptions)) {
-            GoogleSignIn.requestPermissions(
-                    this,
-                    REQUEST_OAUTH_REQUEST_CODE,
-                    GoogleSignIn.getLastSignedInAccount(this),
-                    fitnessOptions);
-        }
-    }
-
-    private void signInToGoogleFit() {
-        FitnessOptions fitnessOptions = FitnessOptions.builder()
-                .addDataType(DataType.TYPE_LOCATION_SAMPLE, FitnessOptions.ACCESS_READ)
-                .build();
-
-        GoogleSignInAccount account = GoogleSignIn.getAccountForExtension(this, fitnessOptions);
-
-        if (account == null || !GoogleSignIn.hasPermissions(account, fitnessOptions)) {
-            GoogleSignIn.requestPermissions(
-                    this,
-                    REQUEST_OAUTH_REQUEST_CODE,
-                    GoogleSignIn.getLastSignedInAccount(this),
-                    fitnessOptions);
-        } else {
-            // Proceed to read data if already signed in
-            readFitnessData(account);
-        }
-    }
-
-    private void readFitnessData(GoogleSignInAccount account) {
-        ZonedDateTime endTime = LocalDateTime.now().atZone(ZoneId.systemDefault());
-        ZonedDateTime startTime = endTime.minusWeeks(1);
-        Log.i(TAG, "Range Start: $startTime");
-        Log.i(TAG, "Range End: $endTime");
-        DataReadRequest readRequest = new DataReadRequest.Builder()
-                .read(DataType.TYPE_LOCATION_SAMPLE)
-                .setTimeRange(startTime.toEpochSecond(), endTime.toEpochSecond(), TimeUnit.MILLISECONDS)
-                .build();
-
-        Task<DataReadResponse> response = Fitness.getHistoryClient(this, account)
-                .readData(readRequest);
-
-        response.addOnSuccessListener(dataReadResponse -> {
-            for (DataSet dataSet : dataReadResponse.getDataSets()) {
-                for (DataPoint dp : dataSet.getDataPoints()) {
-                    for (Field field : dp.getDataType().getFields()) {
-                        Log.d("GoogleFit", "Field: " + field.getName() + " Value: " + dp.getValue(field));
-                    }
-                }
-            }
-        });
     }
 }

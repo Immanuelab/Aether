@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "Created App");
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -52,16 +53,19 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(binding.navView, navController);
 
         firestore = FirebaseFirestore.getInstance();
+
+        // request permission for google fit
+        // requestFitnessPermissions();
+        signInToGoogleFit();
     }
 
     public FirebaseFirestore getFirestore() {
         return firestore;
-
-        // request permission for google fit
-        requestFitnessPermissions();
     }
 
+    // deprecated, using signInToGoogleFit instead
     private void requestFitnessPermissions() {
+        Log.d(TAG, "Requested Fitness Permissions");
         FitnessOptions fitnessOptions = FitnessOptions.builder()
                 .addDataType(DataType.TYPE_LOCATION_SAMPLE, FitnessOptions.ACCESS_READ)
                 .build();
@@ -75,32 +79,43 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void signInToGoogleFit() {
+        Log.d(TAG, "Requested Fitness Permissions and Signin requested");
         FitnessOptions fitnessOptions = FitnessOptions.builder()
-                .addDataType(DataType.TYPE_LOCATION_SAMPLE, FitnessOptions.ACCESS_READ)
+                // .addDataType(DataType.TYPE_DISTANCE_DELTA, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
                 .build();
 
         GoogleSignInAccount account = GoogleSignIn.getAccountForExtension(this, fitnessOptions);
 
         if (account == null || !GoogleSignIn.hasPermissions(account, fitnessOptions)) {
+            Log.d(TAG, "Need Sign in, ask user to sign in");
             GoogleSignIn.requestPermissions(
                     this,
                     REQUEST_OAUTH_REQUEST_CODE,
                     GoogleSignIn.getLastSignedInAccount(this),
                     fitnessOptions);
         } else {
+            Log.d(TAG, "Already signed in, read fitness data");
             // Proceed to read data if already signed in
             readFitnessData(account);
         }
     }
 
     private void readFitnessData(GoogleSignInAccount account) {
+        Log.d(TAG, "Started reading fitness data");
         ZonedDateTime endTime = LocalDateTime.now().atZone(ZoneId.systemDefault());
         ZonedDateTime startTime = endTime.minusWeeks(1);
-        Log.i(TAG, "Range Start: $startTime");
-        Log.i(TAG, "Range End: $endTime");
+        Log.i(TAG, String.format("Range Start: %s", startTime));
+        Log.i(TAG, String.format("Range End: %s", endTime));
+        // Currently don't have any data, so it won't read anything.
+        // TODO: either record health data before read, or uses google account that actually has data in google fit
         DataReadRequest readRequest = new DataReadRequest.Builder()
-                .read(DataType.TYPE_LOCATION_SAMPLE)
-                .setTimeRange(startTime.toEpochSecond(), endTime.toEpochSecond(), TimeUnit.MILLISECONDS)
+                // speed and location is not getting read anymore as we are switching to step trackers
+                // .read(DataType.TYPE_LOCATION_SAMPLE) // Location
+                // .read(DataType.TYPE_SPEED) // Speed
+                // .read(DataType.TYPE_DISTANCE_DELTA) // distance travelled  for the last week
+                .read(DataType.TYPE_STEP_COUNT_DELTA) // Num of steps taken for the last week
+                .setTimeRange(startTime.toEpochSecond(), endTime.toEpochSecond(), TimeUnit.SECONDS)
                 .build();
 
         Task<DataReadResponse> response = Fitness.getHistoryClient(this, account)

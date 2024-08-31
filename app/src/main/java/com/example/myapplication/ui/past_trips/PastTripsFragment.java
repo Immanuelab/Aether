@@ -1,9 +1,12 @@
 package com.example.myapplication.ui.past_trips;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,9 +19,18 @@ import com.example.myapplication.R;
 import com.example.myapplication.databinding.FragmentPastTripsBinding;
 import com.example.myapplication.ui.CardAdapter;
 import com.example.myapplication.ui.CardFactory;
+import com.example.myapplication.ui.CardItem;
+import com.example.myapplication.ui.Trip;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 
-public class PastTripsFragment extends Fragment {
+public class PastTripsFragment extends Fragment implements CardAdapter.OnCardClickListener {
 
     private FragmentPastTripsBinding binding;
 
@@ -33,12 +45,42 @@ public class PastTripsFragment extends Fragment {
         final TextView textView = binding.textPastTrips;
         pastTripsViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
 
-        // Get RecycleView and append cards containing user info
-        RecyclerView recyclerView = root.findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(new CardAdapter(new CardFactory().createCardList()));
+        FirebaseFirestore.setLoggingEnabled(true);
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+
+        String userId = "aaa";
+        CollectionReference tripsRef = firestore.collection("users").document(userId).collection("trips");
+
+        ProgressBar progressBar = binding.getRoot().findViewById(R.id.progressBar);
+
+        progressBar.setVisibility(View.VISIBLE);
+
+        tripsRef.get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        progressBar.setVisibility(View.GONE);
+                        List<Trip> trips = new ArrayList<>();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Trip trip = document.toObject(Trip.class);
+                            Log.d("Firestore", "Trip: " + trip.getType() + ", Emission: " + trip.getEmission());
+                            trips.add(trip);
+                        }
+                        RecyclerView recyclerView = binding.getRoot().findViewById(R.id.recyclerView);
+                        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                        recyclerView.setAdapter(new CardAdapter(new CardFactory().createCardList(trips), this));
+
+                    } else {
+                        Log.d("Firestore", "Error getting documents: ", task.getException());
+                    }
+                });
 
         return root;
+    }
+
+    @Override
+    public void onCardClick(CardItem cardItem) {
+        TripDetailDialogFragment dialogFragment = TripDetailDialogFragment.newInstance(cardItem.getTitle(), cardItem.getDescription());
+        dialogFragment.show(requireActivity().getSupportFragmentManager(), "TripDetailDialog");
     }
 
     @Override

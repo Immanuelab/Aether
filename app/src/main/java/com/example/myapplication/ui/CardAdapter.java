@@ -9,16 +9,24 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.myapplication.MainActivity;
 import com.example.myapplication.R;
+import com.example.myapplication.ui.past_trips.TripDetailDialogFragment;
 
 import java.util.List;
 
 public class CardAdapter extends RecyclerView.Adapter<CardAdapter.CardViewHolder> {
 
     private List<CardItem> items;
+    private final OnCardClickListener onCardClickListener;
 
-    public CardAdapter(List<CardItem> items) {
+    public interface OnCardClickListener {
+        void onCardClick(CardItem cardItem);
+    }
+
+    public CardAdapter(List<CardItem> items, OnCardClickListener onCardClickListener) {
         this.items = items;
+        this.onCardClickListener = onCardClickListener;
     }
 
     @NonNull
@@ -39,7 +47,8 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.CardViewHolder
         return items.size();
     }
 
-    public static class CardViewHolder extends RecyclerView.ViewHolder {
+    public class CardViewHolder extends RecyclerView.ViewHolder {
+
         private TextView titleTextView;
         private TextView descriptionTextView;
         private ImageView imageView;
@@ -49,6 +58,15 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.CardViewHolder
             titleTextView = itemView.findViewById(R.id.textTitle);
             descriptionTextView = itemView.findViewById(R.id.textDescription);
             imageView = itemView.findViewById(R.id.imageView);
+
+            itemView.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    CardItem cardItem = items.get(position);
+                    onCardClickListener.onCardClick(cardItem);
+
+                }
+            });
         }
 
         public void bind(CardItem item) {

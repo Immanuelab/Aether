@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Log.d(TAG, "Already signed in, read fitness data");
             // Proceed to read data if already signed in
+
             readFitnessData(account);
         }
     }
@@ -107,6 +108,15 @@ public class MainActivity extends AppCompatActivity {
         ZonedDateTime startTime = endTime.minusWeeks(1);
         Log.i(TAG, String.format("Range Start: %s", startTime));
         Log.i(TAG, String.format("Range End: %s", endTime));
+
+        DataSource dataSource = new DataSource.Builder()
+                .setAppPackageName("com.google.android.gms")
+                .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+                .setType(DataSource.TYPE_DERIVED)
+                .setStreamName("estimated_steps")
+                .build();
+
+
         // Currently don't have any data, so it won't read anything.
         // TODO: either record health data before read, or uses google account that actually has data in google fit
         DataReadRequest readRequest = new DataReadRequest.Builder()
@@ -114,21 +124,38 @@ public class MainActivity extends AppCompatActivity {
                 // .read(DataType.TYPE_LOCATION_SAMPLE) // Location
                 // .read(DataType.TYPE_SPEED) // Speed
                 // .read(DataType.TYPE_DISTANCE_DELTA) // distance travelled  for the last week
-                .read(DataType.TYPE_STEP_COUNT_DELTA) // Num of steps taken for the last week
+                //.read(DataType.TYPE_STEP_COUNT_DELTA) // Num of steps taken for the last week
+                .aggregate(dataSource)
+                .bucketByTime(1, TimeUnit.DAYS)
                 .setTimeRange(startTime.toEpochSecond(), endTime.toEpochSecond(), TimeUnit.SECONDS)
                 .build();
 
-        Task<DataReadResponse> response = Fitness.getHistoryClient(this, account)
-                .readData(readRequest);
+        Fitness.getHistoryClient(this, GoogleSignIn.getAccountForExtension(this, fitnessOptions))
+                .readData(request)
+                .addOnSuccessListener(response -> {
+                    int totalSteps = response.getBuckets().stream()
+                            .flatMap(bucket -> bucket.getDataSets().stream())
+                            .flatMap(dataSet -> dataSet.getDataPoints().stream())
+                            .mapToInt(dataPoint -> dataPoint.getValue(Field.FIELD_STEPS).asInt())
+                            .sum();
+                    Log.i(TAG, String.format("Total steps: %d", totalSteps));
+                })
+                .addOnFailureListener(response -> {
+                    Log.i(TAG, "There was a problem getting steps.", response);
+                });
 
-        response.addOnSuccessListener(dataReadResponse -> {
-            for (DataSet dataSet : dataReadResponse.getDataSets()) {
-                for (DataPoint dp : dataSet.getDataPoints()) {
-                    for (Field field : dp.getDataType().getFields()) {
-                        Log.d("GoogleFit", "Field: " + field.getName() + " Value: " + dp.getValue(field));
-                    }
-                }
-            }
-        });
+
+//        Task<DataReadResponse> response = Fitness.getHistoryClient(this, account)
+//                .readData(readRequest);
+//
+//        response.addOnSuccessListener(dataReadResponse -> {
+//            for (DataSet dataSet : dataReadResponse.getDataSets()) {
+//                for (DataPoint dp : dataSet.getDataPoints()) {
+//                    for (Field field : dp.getDataType().getFields()) {
+//                        Log.d("GoogleFit", "Field: " + field.getName() + " Value: " + dp.getValue(field));
+//                    }
+//                }
+//            }
+//        });
     }
 }

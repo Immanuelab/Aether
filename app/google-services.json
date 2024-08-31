@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1098481631681",
+    "project_id": "aether-fbbe8",
+    "storage_bucket": "aether-fbbe8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1098481631681:android:3204fe238ba818c48aef40",
+        "android_client_info": {
+          "package_name": "com.example.myapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgvZCNWvK0TmsElTbv9n0wR0iPDWOfEJw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

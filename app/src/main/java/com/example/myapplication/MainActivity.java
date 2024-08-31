@@ -97,7 +97,12 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Log.d(TAG, "Already signed in, read fitness data");
             // Proceed to read data if already signed in
+
+            subscribeToFitnessData();
             readFitnessData(account);
+
+
+
         }
     }
 
@@ -131,4 +136,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    private void subscribeToFitnessData() {
+        GoogleSignInAccount account = GoogleSignIn.getAccountForExtension(this, fitnessOptions);
+
+        Fitness.getRecordingClient(this, account)
+                .subscribe(DataType.TYPE_STEP_COUNT_DELTA)
+                .addOnSuccessListener(unused ->
+                        Log.i(TAG, "Successfully subscribed!"))
+                .addOnFailureListener(e ->
+                        Log.w(TAG, "There was a problem subscribing.", e));
+    }
+
+
 }

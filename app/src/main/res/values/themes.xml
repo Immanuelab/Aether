@@ -1,5 +1,4 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Theme.MyApplication" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryVariant">@color/colorPrimaryVariant</item>
@@ -14,12 +13,10 @@
 
         <item name="android:windowBackground">@color/backgroundColor</item>
 
-        <!-- Customize text appearances if needed -->
         <item name="textAppearanceHeadline1">@style/TextAppearance.Headline1</item>
         <item name="textAppearanceBody1">@style/TextAppearance.Body1</item>
     </style>
 
-    <!-- Text Appearance Styles -->
     <style name="TextAppearance.Headline1" parent="TextAppearance.MaterialComponents.Headline1">
         <item name="android:textColor">@color/colorPrimary</item>
     </style>

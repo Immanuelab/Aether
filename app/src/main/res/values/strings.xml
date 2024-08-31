@@ -3,4 +3,8 @@
     <string name="title_home">Home</string>
     <string name="title_past_trips">Past Trips</string>
     <string name="title_leaderboard">Leaderboard</string>
+
+    <string name="header_home">Home</string>
+    <string name="header_past_trips">Past Trips</string>
+    <string name="header_leaderboard">Leaderboard</string>
 </resources>

@@ -10,7 +10,7 @@ public class PastTripsViewModel extends ViewModel {
 
     public PastTripsViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("Past Trips");
+        mText.setValue("");
     }
 
     public LiveData<String> getText() {

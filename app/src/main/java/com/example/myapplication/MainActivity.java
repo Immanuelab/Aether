@@ -32,10 +32,12 @@ import java.time.ZoneId;
 import android.util.Log;
 
 import com.example.myapplication.databinding.ActivityMainBinding;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
+    private FirebaseFirestore firestore;
     private static final int REQUEST_OAUTH_REQUEST_CODE = 1;
     private static final String TAG = "MainActivity";
 
@@ -46,15 +48,14 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        BottomNavigationView navView = findViewById(R.id.nav_view);
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        //AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-        //        R.id.navigation_home, R.id.navigation_past_trips, R.id.navigation_leaderboard)
-        //        .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
-        //NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
+
+        firestore = FirebaseFirestore.getInstance();
+    }
+
+    public FirebaseFirestore getFirestore() {
+        return firestore;
 
         // request permission for google fit
         requestFitnessPermissions();

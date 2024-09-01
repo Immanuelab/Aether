@@ -44,8 +44,8 @@ android {
 
 dependencies {
 
-    implementation("com.google.android.gms:play-services-fitness:21.2.0")
-    implementation(platform("com.google.firebase:firebase-bom:33.2.0"))
+    implementation(libs.play.services.fitness)
+    implementation(libs.firebase.bom)
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.constraintlayout)
@@ -63,6 +63,8 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
+
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
     implementation("androidx.activity:activity-compose:1.3.0-alpha07")
 
     implementation("androidx.credentials:credentials:1.3.0-alpha01")

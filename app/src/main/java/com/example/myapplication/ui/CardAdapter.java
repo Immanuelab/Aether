@@ -9,9 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.myapplication.MainActivity;
 import com.example.myapplication.R;
-import com.example.myapplication.ui.past_trips.TripDetailDialogFragment;
 
 import java.util.List;
 
@@ -56,7 +54,7 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.CardViewHolder
         public CardViewHolder(@NonNull View itemView) {
             super(itemView);
             titleTextView = itemView.findViewById(R.id.textTitle);
-            descriptionTextView = itemView.findViewById(R.id.textDescription);
+            descriptionTextView = itemView.findViewById(R.id.textDistance);
             imageView = itemView.findViewById(R.id.imageView);
 
             itemView.setOnClickListener(v -> {

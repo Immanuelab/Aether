@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -18,12 +19,14 @@ public class TripDetailDialogFragment extends DialogFragment {
 
     private static final String ARG_TITLE = "title";
     private static final String ARG_DESCRIPTION = "description";
+    private static final int ARG_IMAGE_RES_ID = 0;
 
-    public static TripDetailDialogFragment newInstance(String title, String description) {
+    public static TripDetailDialogFragment newInstance(String title, String description, int imageResId) {
         TripDetailDialogFragment fragment = new TripDetailDialogFragment();
         Bundle args = new Bundle();
         args.putString(ARG_TITLE, title);
         args.putString(ARG_DESCRIPTION, description);
+        args.putInt(String.valueOf(ARG_IMAGE_RES_ID), imageResId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -47,12 +50,15 @@ public class TripDetailDialogFragment extends DialogFragment {
         if (getArguments() != null) {
             String title = getArguments().getString(ARG_TITLE);
             String description = getArguments().getString(ARG_DESCRIPTION);
+            int imageResId = getArguments().getInt(String.valueOf(ARG_IMAGE_RES_ID));
 
             TextView titleView = view.findViewById(R.id.detailTitle);
             TextView descriptionView = view.findViewById(R.id.detailDescription);
+            ImageView imageView = view.findViewById(R.id.detailImageView);
 
             titleView.setText(title);
             descriptionView.setText(description);
+            imageView.setImageResource(imageResId);
         }
 
         return view;    }

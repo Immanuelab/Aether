@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.notifications;
+package com.example.myapplication.ui.leaderboard;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -10,7 +10,7 @@ public class LeaderboardViewModel extends ViewModel {
 
     public LeaderboardViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("Leaderboard");
+        mText.setValue("");
     }
 
     public LiveData<String> getText() {

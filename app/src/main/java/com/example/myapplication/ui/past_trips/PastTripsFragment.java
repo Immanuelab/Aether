@@ -1,6 +1,5 @@
 package com.example.myapplication.ui.past_trips;
 
-import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,12 +21,13 @@ import com.example.myapplication.ui.CardFactory;
 import com.example.myapplication.ui.CardItem;
 import com.example.myapplication.ui.Trip;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class PastTripsFragment extends Fragment implements CardAdapter.OnCardClickListener {
@@ -55,6 +55,8 @@ public class PastTripsFragment extends Fragment implements CardAdapter.OnCardCli
 
         progressBar.setVisibility(View.VISIBLE);
 
+        AtomicInteger totalEmission = new AtomicInteger();
+
         tripsRef.get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
@@ -62,12 +64,18 @@ public class PastTripsFragment extends Fragment implements CardAdapter.OnCardCli
                         List<Trip> trips = new ArrayList<>();
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Trip trip = document.toObject(Trip.class);
+                            totalEmission.addAndGet(trip.getEmission());
+
                             Log.d("Firestore", "Trip: " + trip.getType() + ", Emission: " + trip.getEmission());
                             trips.add(trip);
                         }
+
                         RecyclerView recyclerView = binding.getRoot().findViewById(R.id.recyclerView);
                         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
                         recyclerView.setAdapter(new CardAdapter(new CardFactory().createCardList(trips), this));
+
+                        DocumentReference userRef = firestore.collection("users").document(userId);
+                        userRef.update("totalEmission", totalEmission.get());
 
                     } else {
                         Log.d("Firestore", "Error getting documents: ", task.getException());
@@ -79,7 +87,7 @@ public class PastTripsFragment extends Fragment implements CardAdapter.OnCardCli
 
     @Override
     public void onCardClick(CardItem cardItem) {
-        TripDetailDialogFragment dialogFragment = TripDetailDialogFragment.newInstance(cardItem.getTitle(), cardItem.getDescription());
+        TripDetailDialogFragment dialogFragment = TripDetailDialogFragment.newInstance(cardItem.getTitle(), cardItem.getDescription(), cardItem.getImageResId());
         dialogFragment.show(requireActivity().getSupportFragmentManager(), "TripDetailDialog");
     }
 

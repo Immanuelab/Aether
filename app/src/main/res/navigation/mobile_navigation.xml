@@ -19,7 +19,7 @@
 
     <fragment
         android:id="@+id/navigation_leaderboard"
-        android:name="com.example.myapplication.ui.notifications.LeaderboardFragment"
+        android:name="com.example.myapplication.ui.leaderboard.LeaderboardFragment"
         android:label="@string/title_leaderboard"
         tools:layout="@layout/fragment_leaderboard" />
 </navigation>

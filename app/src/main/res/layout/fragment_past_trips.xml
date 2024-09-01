@@ -38,7 +38,7 @@
         android:layout_width="224dp"
         android:layout_height="46dp"
         android:layout_marginTop="32dp"
-        android:fontFamily="sans-serif-condensed-medium"
+        android:fontFamily="sans-serif"
         android:text="@string/header_past_trips"
         android:textAppearance="@style/TextAppearance.Headline1"
         android:textSize="24sp"

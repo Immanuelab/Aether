@@ -12,6 +12,7 @@ import androidx.navigation.ui.NavigationUI;
 
 // For Fit API
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptionsExtension;
 import com.google.android.gms.fitness.FitnessOptions;
 import com.google.android.gms.fitness.data.DataType;
 import androidx.annotation.Nullable;
@@ -33,6 +34,16 @@ import android.util.Log;
 
 import com.example.myapplication.databinding.ActivityMainBinding;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import javax.sql.DataSource;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -57,6 +68,16 @@ public class MainActivity extends AppCompatActivity {
         // request permission for google fit
         // requestFitnessPermissions();
         signInToGoogleFit();
+
+        // Configure sign-in to request the user's email
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+
+
+
+
+
     }
 
     public FirebaseFirestore getFirestore() {
@@ -94,11 +115,13 @@ public class MainActivity extends AppCompatActivity {
                     REQUEST_OAUTH_REQUEST_CODE,
                     GoogleSignIn.getLastSignedInAccount(this),
                     fitnessOptions);
+                    subscribeToFitnessData(account);
+                    readFitnessData(account);
         } else {
             Log.d(TAG, "Already signed in, read fitness data");
             // Proceed to read data if already signed in
 
-            subscribeToFitnessData();
+            subscribeToFitnessData(account);
             readFitnessData(account);
         }
     }
@@ -110,12 +133,12 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG, String.format("Range Start: %s", startTime));
         Log.i(TAG, String.format("Range End: %s", endTime));
 
-        DataSource dataSource = new DataSource.Builder()
-                .setAppPackageName("com.google.android.gms")
-                .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
-                .setType(DataSource.TYPE_DERIVED)
-                .setStreamName("estimated_steps")
-                .build();
+//        DataSource dataSource = new DataSource.Builder()
+//                .setAppPackageName("com.google.android.gms")
+//                .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+//                .setType(DataSource.TYPE_DERIVED)
+//                .setStreamName("estimated_steps")
+//                .build();
 
 
         // Currently don't have any data, so it won't read anything.
@@ -125,42 +148,41 @@ public class MainActivity extends AppCompatActivity {
                 // .read(DataType.TYPE_LOCATION_SAMPLE) // Location
                 // .read(DataType.TYPE_SPEED) // Speed
                 // .read(DataType.TYPE_DISTANCE_DELTA) // distance travelled  for the last week
-                //.read(DataType.TYPE_STEP_COUNT_DELTA) // Num of steps taken for the last week
-                .aggregate(dataSource)
-                .bucketByTime(1, TimeUnit.DAYS)
+                .read(DataType.TYPE_STEP_COUNT_DELTA) // Num of steps taken for the last week
+//                .aggregate(dataSource)
+//                .bucketByTime(1, TimeUnit.DAYS)
                 .setTimeRange(startTime.toEpochSecond(), endTime.toEpochSecond(), TimeUnit.SECONDS)
                 .build();
 
-        Fitness.getHistoryClient(this, GoogleSignIn.getAccountForExtension(this, fitnessOptions))
-                .readData(request)
-                .addOnSuccessListener(response -> {
-                    int totalSteps = response.getBuckets().stream()
-                            .flatMap(bucket -> bucket.getDataSets().stream())
-                            .flatMap(dataSet -> dataSet.getDataPoints().stream())
-                            .mapToInt(dataPoint -> dataPoint.getValue(Field.FIELD_STEPS).asInt())
-                            .sum();
-                    Log.i(TAG, String.format("Total steps: %d", totalSteps));
-                })
-                .addOnFailureListener(response -> {
-                    Log.i(TAG, "There was a problem getting steps.", response);
-                });
+//        Fitness.getHistoryClient(this, GoogleSignIn.getAccountForExtension(this, fitnessOptions))
+//                .readData(request)
+//                .addOnSuccessListener(response -> {
+//                    int totalSteps = response.getBuckets().stream()
+//                            .flatMap(bucket -> bucket.getDataSets().stream())
+//                            .flatMap(dataSet -> dataSet.getDataPoints().stream())
+//                            .mapToInt(dataPoint -> dataPoint.getValue(Field.FIELD_STEPS).asInt())
+//                            .sum();
+//                    Log.i(TAG, String.format("Total steps: %d", totalSteps));
+//                });
 
 
-//        Task<DataReadResponse> response = Fitness.getHistoryClient(this, account)
-//                .readData(readRequest);
-//
-//        response.addOnSuccessListener(dataReadResponse -> {
-//            for (DataSet dataSet : dataReadResponse.getDataSets()) {
-//                for (DataPoint dp : dataSet.getDataPoints()) {
-//                    for (Field field : dp.getDataType().getFields()) {
-//                        Log.d("GoogleFit", "Field: " + field.getName() + " Value: " + dp.getValue(field));
-//                    }
-//                }
-//            }
-//        });
+
+        Task<DataReadResponse> response = Fitness.getHistoryClient(this, account)
+                .readData(readRequest);
+
+        response.addOnSuccessListener(dataReadResponse -> {
+            for (DataSet dataSet : dataReadResponse.getDataSets()) {
+                for (DataPoint dp : dataSet.getDataPoints()) {
+                    for (Field field : dp.getDataType().getFields()) {
+                        Log.d("GoogleFit", "Field: " + field.getName() + " Value: " + dp.getValue(field));
+                    }
+                }
+            }
+        });
     }
-    private void subscribeToFitnessData() {
-        GoogleSignInAccount account = GoogleSignIn.getAccountForExtension(this, fitnessOptions);
+    private void subscribeToFitnessData(GoogleSignInAccount account) {
+       // GoogleSignInAccount account = GoogleSignIn.getAccountForExtension(this, fitnessOptions);
+        Log.d(TAG, "Subscribe started");
 
         Fitness.getRecordingClient(this, account)
                 .subscribe(DataType.TYPE_STEP_COUNT_DELTA)
@@ -171,4 +193,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-}
+
+
+    }
+
+
+
